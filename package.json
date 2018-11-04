@@ -1,0 +1,19 @@
+{
+  "name": "rebase-create-index",
+  "version": "0.0.1",
+  "description": "Utility to create secondary index using Redis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:evanx/rebase-create-index.git"
+  },
+  "author": "evanx",
+  "license": "ISC",
+  "dependencies": {
+    "multi-exec-async": "^0.2.0",
+    "redis": "^2.8.0"
+  }
+}
