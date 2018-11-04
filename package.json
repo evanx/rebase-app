@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git@github.com:evanx/rebase-create-index.git"
   },
-  "author": "evanx",
+  "author": "evan.summers@bounce.com",
   "license": "ISC",
   "dependencies": {
     "multi-exec-async": "^0.2.0",
