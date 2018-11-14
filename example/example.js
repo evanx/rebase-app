@@ -1,6 +1,8 @@
 const assert = require('assert')
+const bluebird = require('bluebird')
 const rtx = require('multi-exec-async')
 const redis = require('redis')
+bluebird.promisifyAll(redis)
 
 const actions = require('../lib/tableActions.js')
 const initDatabaseSchema = require('../lib/initDatabaseSchema.js')
@@ -24,12 +26,17 @@ const schema = {
       },
       uniqueIndexes: {
          email: {
-            indexer: user => [user.email]
+            uniquer: user => [user.email]
          }
       },
       groupIndexes: {
          group: {
-            indexer: user => [user.org, user.group]
+            grouper: user => [user.org, user.group]
+         }
+      },
+      scoreIndexes: {
+         created: {
+            scorer: user => user.created.getTime()
          }
       }
    }
