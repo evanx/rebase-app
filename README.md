@@ -1,5 +1,3 @@
 # rebase-create-index
 
-Utility to create secondary index using Redis
-
-
+Redis Database Management System ;)

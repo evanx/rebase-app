@@ -3,10 +3,12 @@ const bluebird = require('bluebird')
 const rtx = require('multi-exec-async')
 const redis = require('redis')
 const lodash = require('lodash')
+const logger = require('pino')({ name: 'delete', level: 'debug' })
 
-const actions = require('../lib/tableActions.js')
-const initDatabaseSchema = require('../lib/initDatabaseSchema.js')
+const actions = require('../lib/tableActions')
+const initDatabaseSchema = require('../lib/initDatabaseSchema')
 const schema = require('./schema')
+const exportDatabase = require('../lib/exportDatabase')
 
 const state = {}
 
@@ -18,7 +20,9 @@ const end = async () => {
 
 const start = async () => {
    initDatabaseSchema(schema)
-   state.client = redis.createClient()
+   state.client = redis.createClient({ db: 13 })
+   state.client.flushdb()
+   const initialDatabase = await exportDatabase(state)
    const data = {
       id: '1234',
       firstName: 'Evan',
@@ -30,10 +34,18 @@ const start = async () => {
       verified: false
    }
    const indexData = lodash.pick(data, schema.indexFields)
-   await actions.delete(indexData, {
+   await actions({
       client: state.client,
       schema: schema.user
-   })
+   }).create(data)
+   const resultDatabase = await exportDatabase(state)
+   await actions({
+      client: state.client,
+      schema: schema.user
+   }).delete(indexData)
+   const finalDatabase = await exportDatabase(state)
+   logger.debug({ resultDatabase })
+   assert.deepStrictEqual(initialDatabase, finalDatabase, 'database')
 }
 
 start()

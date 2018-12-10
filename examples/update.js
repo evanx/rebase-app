@@ -29,10 +29,10 @@ const start = async () => {
       created: new Date(),
       verified: false
    }
-   await actions.create(data, {
+   await actions({
       client: state.client,
       schema: schema.user
-   })
+   }).create(data)
 }
 
 start()

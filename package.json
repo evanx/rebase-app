@@ -6,8 +6,8 @@
    "scripts": {
       "test": "jest",
       "demo": "bash bin/demo.sh",
-      "example:create": "node example/example-create.js",
-      "example:delete": "node example/example-delete.js"
+      "example:create": "node examples/create",
+      "example:delete": "node examples/delete"
    },
    "repository": {
       "type": "git",
@@ -16,9 +16,12 @@
    "author": "evan.summers@bounce.com",
    "license": "ISC",
    "dependencies": {
+      "@feathersjs/errors": "^3.3.4",
       "bluebird": "^3.5.3",
       "lodash": "^4.17.11",
       "multi-exec-async": "^0.2.0",
+      "pino": "^5.9.0",
+      "pino-pretty": "^2.4.0",
       "redis": "^2.8.0"
    },
    "devDependencies": {
