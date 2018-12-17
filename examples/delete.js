@@ -1,59 +1,111 @@
 const assert = require('assert')
-const bluebird = require('bluebird')
-const rtx = require('multi-exec-async')
-const redis = require('redis')
 const lodash = require('lodash')
-const logger = require('pino')({ name: 'delete', level: 'debug' })
-
+const rtx = require('multi-exec-async')
+const redis = require('../lib/redis')
+const createLogger = require('../lib/createLogger')
 const actions = require('../lib/tableActions')
 const initDatabaseSchema = require('../lib/initDatabaseSchema')
 const schema = require('./schema')
 const exportDatabase = require('../lib/exportDatabase')
+const assertDatabase = require('../lib/assertDatabase')
 
-const state = {}
+const state = {
+  timestamp: 1544000000000
+}
 
-bluebird.promisifyAll(redis)
+Object.assign(state, {
+  now: () => state.timestamp++
+})
+
+const data = {
+  id: '1234',
+  firstName: 'Evan',
+  lastName: 'Summers',
+  org: 'test-org',
+  group: 'software-development',
+  email: 'evan@test-org.com',
+  created: new Date(state.timestamp),
+  verified: false
+}
+
+const expectedDatabase = {
+  'user:1234:h': {
+    id: '1234',
+    firstName: 'Evan',
+    lastName: 'Summers',
+    org: 'test-org',
+    group: 'software-development',
+    email: 'evan@test-org.com',
+    created: new Date(state.timestamp).toISOString(),
+    verified: 'false'
+  },
+  'user::created:z': ['1234', String(state.timestamp)],
+  'user::email:h': {
+    'evan@test-org.com': '1234'
+  },
+  'user:group::test-org:software-development:s': ['1234']
+}
 
 const end = async () => {
-   state.client.quit()
+  state.client.quit()
+}
+
+const getConfigEnv = env => {
+  return {
+    systemKey: 'rebase:test',
+    clientKey: 'examples:delete',
+    redis: {
+      db: 13
+    }
+  }
+}
+
+const configureClient = async ({ client, config }) => {
+  const [instanceId, configRes] = await rtx(client, multi => {
+    multi.incr(`${config.clientKey}:i`)
+    multi.hgetallAsync(`config:${config.clientKey}`)
+  })
+  Object.assign(config, configRes)
+  config.serviceId = `${config.clientKey}:${instanceId}`
 }
 
 const start = async () => {
-   initDatabaseSchema(schema)
-   state.client = redis.createClient({ db: 13 })
-   state.client.flushdb()
-   const initialDatabase = await exportDatabase(state)
-   const data = {
-      id: '1234',
-      firstName: 'Evan',
-      lastName: 'Summers',
-      org: 'test-org',
-      group: 'software-development',
-      email: 'evan@test-org.com',
-      created: new Date(),
-      verified: false
-   }
-   const indexData = lodash.pick(data, schema.indexFields)
-   await actions({
-      client: state.client,
-      schema: schema.user
-   }).create(data)
-   const resultDatabase = await exportDatabase(state)
-   await actions({
-      client: state.client,
-      schema: schema.user
-   }).delete(indexData)
-   const finalDatabase = await exportDatabase(state)
-   logger.debug({ resultDatabase })
-   assert.deepStrictEqual(initialDatabase, finalDatabase, 'database')
+  initDatabaseSchema(schema)
+  state.config = getConfigEnv(process.env)
+  state.client = redis.createClient(state.config.redis)
+  state.client.flushdb()
+  await configureClient(state)
+  const logger = createLogger(state, { name: 'delete' })
+  logger.debug({ status: 'starting', serviceId: state.config.serviceId })
+  const initialDatabase = await exportDatabase(state, 'user:*')
+  const indexData = lodash.pick(data, schema.indexFields)
+  await actions({
+    client: state.client,
+    schema: schema.user
+  }).create(data)
+  const resultDatabase = await exportDatabase(state, 'user:*')
+  logger.info({ resultDatabase })
+  assertDatabase(resultDatabase, expectedDatabase)
+  await actions({
+    client: state.client,
+    schema: schema.user
+  }).delete(indexData)
+  await rtx(state.client, multi => {
+    multi.del('l:examples:delete:1:x')
+  })
+  const finalDatabase = await exportDatabase(state, 'user:*')
+  assert.deepStrictEqual(initialDatabase, finalDatabase, 'final database')
+  await rtx(state.client, multi => {
+    multi.del('examples:delete:i')
+  })
 }
 
 start()
-   .then(() => {
-      console.log('end')
-      return end()
-   })
-   .catch(err => {
-      console.error(err)
-      return end()
-   })
+  .then(() => {
+    console.log('end')
+    return end()
+  })
+  .catch(err => {
+    console.error(err)
+    return end()
+  })

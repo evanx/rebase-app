@@ -1,48 +1,38 @@
 const assert = require('assert')
-const bluebird = require('bluebird')
 const rtx = require('multi-exec-async')
-const redis = require('redis')
 const lodash = require('lodash')
-const logger = require('pino')('create')
 
 const actions = require('../lib/tableActions')
 const initDatabaseSchema = require('../lib/initDatabaseSchema')
-const schema = require('./schema')
 const exportDatabase = require('../lib/exportDatabase')
 
-const state = {}
+const schema = require('./schema')
 
-bluebird.promisifyAll(redis)
-
-const end = async () => {
-   state.client.quit()
-}
-
-const start = async () => {
-   initDatabaseSchema(schema)
-   state.client = redis.createClient()
-   const data = {
+require('../lib/app')({
+  spec: {
+    systemKey: 'rebase:test',
+    serviceKey: 'examples:delete',
+    redis: {
+      db: 13
+    }
+  },
+  async start(state) {
+    const { client, logger } = state
+    initDatabaseSchema(schema)
+    client.flushDb()
+    const data = {
       id: '1234',
       firstName: 'Evan',
       lastName: 'Summers',
       org: 'test-org',
       group: 'software-development',
       email: 'evan@test-org.com',
-      created: new Date(),
+      created: new Date(state.timestamp),
       verified: false
-   }
-   await actions({
+    }
+    await actions({
       client: state.client,
       schema: schema.user
-   }).create(data)
-}
-
-start()
-   .then(() => {
-      console.log('end')
-      return end()
-   })
-   .catch(err => {
-      console.error(err)
-      return end()
-   })
+    }).create(data)
+  }
+})

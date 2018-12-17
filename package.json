@@ -18,6 +18,8 @@
    "dependencies": {
       "@feathersjs/errors": "^3.3.4",
       "bluebird": "^3.5.3",
+      "colors": "^1.3.3",
+      "json-diff": "^0.5.3",
       "lodash": "^4.17.11",
       "multi-exec-async": "^0.2.0",
       "pino": "^5.9.0",
@@ -27,6 +29,7 @@
    "devDependencies": {
       "chai": "^4.2.0",
       "jest": "^23.6.0",
-      "mocha": "^5.2.0"
+      "mocha": "^5.2.0",
+      "nodemon": "^1.18.9"
    }
 }
