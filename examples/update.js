@@ -1,46 +1,81 @@
 const assert = require('assert')
-const bluebird = require('bluebird')
 const rtx = require('multi-exec-async')
-const redis = require('redis')
 const lodash = require('lodash')
 
 const actions = require('../lib/tableActions')
 const initDatabaseSchema = require('../lib/initDatabaseSchema')
+const exportDatabase = require('../lib/exportDatabase')
+const assertDatabase = require('../lib/assertDatabase')
+
 const schema = require('./schema')
 
-const state = {}
+const createSampleUserRecord = state => ({
+   id: '1234',
+   firstName: 'Evan',
+   lastName: 'Summers',
+   org: 'test-org',
+   group: 'software-development',
+   email: 'evan@test-org.com',
+   created: new Date(state.timestamp),
+   verified: false
+})
 
-bluebird.promisifyAll(redis)
-
-const end = async () => {
-   state.client.quit()
-}
-
-const start = async () => {
-   initDatabaseSchema(schema)
-   state.client = redis.createClient()
-   const data = {
+const createExpectedDatabase = state => ({
+   'user:1234:h': {
       id: '1234',
       firstName: 'Evan',
       lastName: 'Summers',
       org: 'test-org',
       group: 'software-development',
       email: 'evan@test-org.com',
-      created: new Date(),
-      verified: false
-   }
-   await actions({
-      client: state.client,
-      schema: schema.user
-   }).create(data)
-}
+      created: new Date(state.timestamp).toISOString(),
+      verified: 'false' // TODO: Parse to boolean
+   },
+   'user::created:z': ['1234', String(state.timestamp)],
+   'user::email:h': {
+      'evan@test-org.com': '1234'
+   },
+   'user:group::test-org:software-development:s': ['1234']
+})
 
-start()
-   .then(() => {
-      console.log('end')
-      return end()
-   })
-   .catch(err => {
-      console.error(err)
-      return end()
-   })
+require('../lib/app')({
+   spec: {
+      testing: true,
+      systemKey: 'rebase:test',
+      serviceKey: 'examples:update',
+      redis: {
+         db: 13
+      }
+   },
+   async start(state) {
+      const { client, logger } = state
+      initDatabaseSchema(schema)
+      client.flushdbAsync()
+      const userRecord = createSampleUserRecord(state)
+      const expectedDatabase = createExpectedDatabase(state)
+      await actions({
+         client: state.client,
+         schema: schema.user
+      }).create(userRecord)
+      const resultDatabase = await exportDatabase(state, 'user:*')
+      logger.info({ resultDatabase })
+      assertDatabase(resultDatabase, expectedDatabase)
+      const loggerRes = lodash.flattenDeep(
+         await client.xreadAsync('streams', 'logger:examples:update:1:x', '0-0')
+      )
+      const expectedLoggerStrings = [
+         'logger:examples:update:1:x',
+         '1544000000002-1',
+         'name',
+         'examples:update:1',
+         'level',
+         'info',
+         'data'
+      ]
+      assert.deepStrictEqual(
+         loggerRes.slice(0, expectedLoggerStrings.length),
+         expectedLoggerStrings,
+         'logger'
+      )
+   }
+})
