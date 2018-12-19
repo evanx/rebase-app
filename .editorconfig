@@ -3,3 +3,11 @@ root = true
 [lib/**.js]
 indent_style = space
 indent_size = 3
+
+[test/**.js]
+indent_style = space
+indent_size = 3
+
+[examples/**.js]
+indent_style = space
+indent_size = 3
