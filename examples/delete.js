@@ -10,102 +10,105 @@ const exportDatabase = require('../lib/exportDatabase')
 const assertDatabase = require('../lib/assertDatabase')
 
 const state = {
-  timestamp: 1544000000000
+   timestamp: 1544000000000
 }
 
 Object.assign(state, {
-  now: () => state.timestamp++
+   now: () => state.timestamp++
 })
 
 const data = {
-  id: '1234',
-  firstName: 'Evan',
-  lastName: 'Summers',
-  org: 'test-org',
-  group: 'software-development',
-  email: 'evan@test-org.com',
-  created: new Date(state.timestamp),
-  verified: false
+   id: '1234',
+   firstName: 'Evan',
+   lastName: 'Summers',
+   org: 'test-org',
+   group: 'software-development',
+   email: 'evan@test-org.com',
+   created: new Date(state.timestamp),
+   verified: false
 }
 
 const expectedDatabase = {
-  'user:1234:h': {
-    id: '1234',
-    firstName: 'Evan',
-    lastName: 'Summers',
-    org: 'test-org',
-    group: 'software-development',
-    email: 'evan@test-org.com',
-    created: new Date(state.timestamp).toISOString(),
-    verified: 'false'
-  },
-  'user::created:z': ['1234', String(state.timestamp)],
-  'user::email:h': {
-    'evan@test-org.com': '1234'
-  },
-  'user:group::test-org:software-development:s': ['1234']
+   'user:1234:h': {
+      id: '1234',
+      firstName: 'Evan',
+      lastName: 'Summers',
+      org: 'test-org',
+      group: 'software-development',
+      email: 'evan@test-org.com',
+      created: new Date(state.timestamp).toISOString(),
+      verified: 'false'
+   },
+   'user::created:z': ['1234', String(state.timestamp)],
+   'user::email:h': {
+      'evan@test-org.com': '1234'
+   },
+   'user:group::test-org:software-development:s': ['1234']
 }
 
 const end = async () => {
-  state.client.quit()
+   state.redis.quit()
 }
 
 const getConfigEnv = env => {
-  return {
-    systemKey: 'rebase:test',
-    clientKey: 'examples:delete',
-    redis: {
-      db: 13
-    }
-  }
+   return {
+      systemKey: 'rebase:test',
+      clientKey: 'examples:delete',
+      redis: {
+         db: 13
+      }
+   }
 }
 
-const configureClient = async ({ client, config }) => {
-  const [instanceId, configRes] = await rtx(client, multi => {
-    multi.incr(`${config.clientKey}:i`)
-    multi.hgetallAsync(`config:${config.clientKey}`)
-  })
-  Object.assign(config, configRes)
-  config.serviceId = `${config.clientKey}:${instanceId}`
+const configureClient = async ({ redis, config }) => {
+   const [instanceId, configRes] = await rtx(redis, multi => {
+      multi.incr(`${config.clientKey}:i`)
+      multi.hgetallAsync(`config:${config.clientKey}`)
+   })
+   Object.assign(config, configRes)
+   config.serviceId = `${config.clientKey}:${instanceId}`
 }
 
 const start = async () => {
-  initDatabaseSchema(schema)
-  state.config = getConfigEnv(process.env)
-  state.client = redis.createClient(state.config.redis)
-  state.client.flushdb()
-  await configureClient(state)
-  const logger = createLogger(state, { name: 'delete' })
-  logger.debug({ status: 'starting', serviceId: state.config.serviceId })
-  const initialDatabase = await exportDatabase(state, 'user:*')
-  const indexData = lodash.pick(data, schema.indexFields)
-  await actions({
-    client: state.client,
-    schema: schema.user
-  }).create(data)
-  const resultDatabase = await exportDatabase(state, 'user:*')
-  logger.info({ resultDatabase })
-  assertDatabase(resultDatabase, expectedDatabase)
-  await actions({
-    client: state.client,
-    schema: schema.user
-  }).delete(indexData)
-  await rtx(state.client, multi => {
-    multi.del('l:examples:delete:1:x')
-  })
-  const finalDatabase = await exportDatabase(state, 'user:*')
-  assert.deepStrictEqual(initialDatabase, finalDatabase, 'final database')
-  await rtx(state.client, multi => {
-    multi.del('examples:delete:i')
-  })
+   initDatabaseSchema(schema)
+   state.config = getConfigEnv(process.env)
+   state.redis = redis.createClient(state.config.redis)
+   state.redis.flushdb()
+   await configureClient(state)
+   const logger = createLogger(state, { name: 'delete' })
+   logger.debug('delete', {
+      status: 'starting',
+      serviceId: state.config.serviceId
+   })
+   const initialDatabase = await exportDatabase(state, 'user:*')
+   const indexData = lodash.pick(data, schema.indexFields)
+   await actions({
+      redis: state.redis,
+      schema: schema.user
+   }).create(data)
+   const resultDatabase = await exportDatabase(state, 'user:*')
+   logger.info('delete', { resultDatabase })
+   assertDatabase(resultDatabase, expectedDatabase)
+   await actions({
+      redis: state.redis,
+      schema: schema.user
+   }).delete(indexData)
+   await rtx(state.redis, multi => {
+      multi.del('l:examples:delete:1:x')
+   })
+   const finalDatabase = await exportDatabase(state, 'user:*')
+   assert.deepStrictEqual(initialDatabase, finalDatabase, 'final database')
+   await rtx(state.redis, multi => {
+      multi.del('examples:delete:i')
+   })
 }
 
 start()
-  .then(() => {
-    console.log('end')
-    return end()
-  })
-  .catch(err => {
-    console.error(err)
-    return end()
-  })
+   .then(() => {
+      console.log('end')
+      return end()
+   })
+   .catch(err => {
+      console.error(err)
+      return end()
+   })

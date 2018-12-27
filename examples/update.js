@@ -39,7 +39,7 @@ const createExpectedDatabase = state => ({
 })
 
 require('../lib/app')({
-   spec: {
+   config: {
       testing: true,
       systemKey: 'rebase:test',
       serviceKey: 'examples:update',
@@ -47,21 +47,22 @@ require('../lib/app')({
          db: 13
       }
    },
+   state: {},
    async start(state) {
-      const { client, logger } = state
+      const { redis, logger } = state
       initDatabaseSchema(schema)
-      client.flushdbAsync()
+      redis.flushdbAsync()
       const userRecord = createSampleUserRecord(state)
       const expectedDatabase = createExpectedDatabase(state)
       await actions({
-         client: state.client,
+         redis: state.redis,
          schema: schema.user
       }).create(userRecord)
       const resultDatabase = await exportDatabase(state, 'user:*')
-      logger.info({ resultDatabase })
+      logger.info('start', { resultDatabase })
       assertDatabase(resultDatabase, expectedDatabase)
       const loggerRes = lodash.flattenDeep(
-         await client.xreadAsync('streams', 'logger:examples:update:1:x', '0-0')
+         await redis.xreadAsync('streams', 'logger:examples:update:1:x', '0-0')
       )
       const expectedLoggerStrings = [
          'logger:examples:update:1:x',
