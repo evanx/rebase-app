@@ -78,5 +78,6 @@ require('../lib/app')({
          expectedLoggerStrings,
          'logger'
       )
+      return state.end()
    }
 })

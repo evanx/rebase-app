@@ -61,5 +61,6 @@ require('../lib/app')({
       const resultDatabase = await exportDatabase(state, 'user:*')
       logger.info('create', { resultDatabase })
       assertDatabase(resultDatabase, expectedDatabase)
+      return state.end()
    }
 })
