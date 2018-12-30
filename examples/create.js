@@ -54,10 +54,7 @@ require('../lib/app')({
       redis.flushdbAsync()
       const userRecord = createSampleUserRecord(state)
       const expectedDatabase = createExpectedDatabase(state)
-      await actions({
-         redis: state.redis,
-         schema: schema.user
-      }).create(userRecord)
+      await actions(state, schema.user).create(userRecord)
       const resultDatabase = await exportDatabase(state, 'user:*')
       logger.info('create', { resultDatabase })
       assertDatabase(resultDatabase, expectedDatabase)

@@ -75,24 +75,18 @@ const start = async () => {
    state.redis = redis.createClient(state.config.redis)
    state.redis.flushdb()
    await configureClient(state)
-   const logger = createLogger(state, { name: 'delete' })
+   const logger = createLogger(state)({ name: 'delete' })
    logger.debug('delete', {
       status: 'starting',
       serviceId: state.config.serviceId
    })
    const initialDatabase = await exportDatabase(state, 'user:*')
    const indexData = lodash.pick(data, schema.indexFields)
-   await actions({
-      redis: state.redis,
-      schema: schema.user
-   }).create(data)
+   await actions(state, schema.user).create(data)
    const resultDatabase = await exportDatabase(state, 'user:*')
    logger.info('delete', { resultDatabase })
    assertDatabase(resultDatabase, expectedDatabase)
-   await actions({
-      redis: state.redis,
-      schema: schema.user
-   }).delete(indexData)
+   await actions(state, schema.user).delete(indexData)
    await rtx(state.redis, multi => {
       multi.del('l:examples:delete:1:x')
    })

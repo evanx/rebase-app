@@ -2,12 +2,13 @@ const assert = require('assert')
 const rtx = require('multi-exec-async')
 const lodash = require('lodash')
 
-const actions = require('../lib/tableActions')
-const initDatabaseSchema = require('../lib/initDatabaseSchema')
-const exportDatabase = require('../lib/exportDatabase')
-const assertDatabase = require('../lib/assertDatabase')
+const starter = require('../../lib/app')
+const actions = require('../../lib/tableActions')
+const initDatabaseSchema = require('../../lib/initDatabaseSchema')
+const exportDatabase = require('../../lib/exportDatabase')
+const assertDatabase = require('../../lib/assertDatabase')
 
-const schema = require('./schema')
+const schema = require('../schema')
 
 const createSampleUserRecord = state => ({
    id: '1234',
@@ -38,7 +39,7 @@ const createExpectedDatabase = state => ({
    'user:group::test-org:software-development:s': ['1234']
 })
 
-require('../lib/app')({
+starter({
    config: {
       testing: true,
       systemKey: 'rebase:test',
@@ -47,30 +48,33 @@ require('../lib/app')({
          db: 13
       }
    },
-   state: {},
+   state: {
+      configureRedis({ redis }) {
+         redis.flushdbAsync()
+      }
+   },
    async start(state) {
       const { redis, logger } = state
       initDatabaseSchema(schema)
-      redis.flushdbAsync()
       const userRecord = createSampleUserRecord(state)
       const expectedDatabase = createExpectedDatabase(state)
-      await actions({
-         redis: state.redis,
-         schema: schema.user
-      }).create(userRecord)
+      await actions(state, schema.user).create(userRecord)
       const resultDatabase = await exportDatabase(state, 'user:*')
-      logger.info('start', { resultDatabase })
+      logger.info('create', { resultDatabase })
+      await actions(state, schema.user).update(userRecord.id, {
+         email: 'evan@test.org'
+      })
       assertDatabase(resultDatabase, expectedDatabase)
       const loggerRes = lodash.flattenDeep(
          await redis.xreadAsync('streams', 'logger:examples:update:1:x', '0-0')
       )
       const expectedLoggerStrings = [
          'logger:examples:update:1:x',
-         '1544000000002-1',
+         '1544000000001-0',
          'name',
          'examples:update:1',
          'level',
-         'info',
+         'debug',
          'data'
       ]
       assert.deepStrictEqual(

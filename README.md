@@ -1,3 +1,6 @@
-# rebase-create-index
+# rebase-app
 
-Redis Database Management System ;)
+Experimental Redis application server archetype.
+
+-  support secondary indexes using Redis data structures
+-  application logging and analytics into Redis
