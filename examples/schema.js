@@ -4,14 +4,12 @@ module.exports = {
       stringify: user => user,
       validate: user => true,
       properties: {
-         validate: {
-            email: user => typeof user.email === 'string'
+         email: {
+            validate: user => typeof user.email === 'string'
          },
-         stringify: {
-            created: date => date.toISOString()
-         },
-         parse: {
-            created: string => new Date(string)
+         created: {
+            stringify: date => date.toISOString(),
+            parse: string => new Date(string)
          }
       },
       uniqueIndexes: {

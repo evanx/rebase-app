@@ -28,13 +28,13 @@ const createExpectedDatabase = state => ({
       lastName: 'Summers',
       org: 'test-org',
       group: 'software-development',
-      email: 'evan@test-org.com',
+      email: 'evan@test.org',
       created: new Date(state.timestamp).toISOString(),
-      verified: 'false' // TODO: Parse to boolean
+      verified: 'false'
    },
    'user::created:z': ['1234', String(state.timestamp)],
    'user::email:h': {
-      'evan@test-org.com': '1234'
+      'evan@test.org': '1234'
    },
    'user:group::test-org:software-development:s': ['1234']
 })
@@ -59,12 +59,14 @@ starter({
       const userRecord = createSampleUserRecord(state)
       const expectedDatabase = createExpectedDatabase(state)
       await actions(state, schema.user).create(userRecord)
-      const resultDatabase = await exportDatabase(state, 'user:*')
-      logger.info('create', { resultDatabase })
+      const createdDatabase = await exportDatabase(state, 'user:*')
+      logger.info('create', { createdDatabase })
       await actions(state, schema.user).update(userRecord.id, {
          email: 'evan@test.org'
       })
-      assertDatabase(resultDatabase, expectedDatabase)
+      const updatedDatabase = await exportDatabase(state, 'user:*')
+      logger.info('update', { updatedDatabase })
+      assertDatabase(updatedDatabase, expectedDatabase)
       const loggerRes = lodash.flattenDeep(
          await redis.xreadAsync('streams', 'logger:examples:update:1:x', '0-0')
       )
@@ -74,7 +76,7 @@ starter({
          'name',
          'examples:update:1',
          'level',
-         'debug',
+         'info',
          'data'
       ]
       assert.deepStrictEqual(
