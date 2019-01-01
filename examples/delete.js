@@ -70,7 +70,6 @@ const configureClient = async ({ redis, config }) => {
 }
 
 const start = async () => {
-   initDatabaseSchema(state, schema)
    state.config = getConfigEnv(process.env)
    state.redis = redis.createClient(state.config.redis)
    state.redis.flushdb()
@@ -80,6 +79,7 @@ const start = async () => {
       status: 'starting',
       serviceId: state.config.serviceId
    })
+   initDatabaseSchema({ logger }, schema)
    const initialDatabase = await exportDatabase(state, 'user:*')
    const indexData = lodash.pick(data, schema.indexFields)
    await actions(state, schema.user).create(data)

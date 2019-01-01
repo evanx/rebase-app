@@ -12,6 +12,11 @@ module.exports = {
             type: PropTypes.instanceOf(Date).isRequired,
             stringify: date => date.toISOString(),
             parse: string => new Date(string)
+         },
+         verified: {
+            type: PropTypes.bool.isRequired,
+            stringify: bool => String(bool),
+            parse: string => string === 'true'
          }
       },
       uniqueIndexes: {
