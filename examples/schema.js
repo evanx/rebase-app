@@ -1,7 +1,5 @@
 module.exports = {
    user: {
-      parse: userRes => userRes,
-      stringify: user => user,
       validate: user => true,
       properties: {
          email: {

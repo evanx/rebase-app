@@ -10,33 +10,38 @@ const assertDatabase = require('../../lib/assertDatabase')
 
 const schema = require('../schema')
 
-const createSampleUserRecord = state => ({
+const createSampleUserRecord = timestamp => ({
    id: '1234',
    firstName: 'Evan',
    lastName: 'Summers',
    org: 'test-org',
    group: 'software-development',
    email: 'evan@test-org.com',
-   created: new Date(state.timestamp),
+   created: new Date(timestamp),
    verified: false
 })
 
-const createExpectedDatabase = state => ({
+const createUpdateData = timestamp => ({
+   email: 'evan@test.org',
+   org: 'testy-org'
+})
+
+const createExpectedDatabase = timestamp => ({
    'user:1234:h': {
       id: '1234',
       firstName: 'Evan',
       lastName: 'Summers',
-      org: 'test-org',
+      org: 'testy-org',
       group: 'software-development',
       email: 'evan@test.org',
-      created: new Date(state.timestamp).toISOString(),
+      created: new Date(timestamp).toISOString(),
       verified: 'false'
    },
-   'user::created:z': ['1234', String(state.timestamp)],
+   'user::created:z': ['1234', String(timestamp)],
    'user::email:h': {
       'evan@test.org': '1234'
    },
-   'user:group::test-org:software-development:s': ['1234']
+   'user:group::testy-org:software-development:s': ['1234']
 })
 
 starter({
@@ -56,14 +61,15 @@ starter({
    async start(state) {
       const { redis, logger } = state
       initDatabaseSchema(schema)
-      const userRecord = createSampleUserRecord(state)
-      const expectedDatabase = createExpectedDatabase(state)
+      const userRecord = createSampleUserRecord(state.now())
+      const expectedDatabase = createExpectedDatabase(state.timestamp)
       await actions(state, schema.user).create(userRecord)
       const createdDatabase = await exportDatabase(state, 'user:*')
       logger.info('create', { createdDatabase })
-      await actions(state, schema.user).update(userRecord.id, {
-         email: 'evan@test.org'
-      })
+      await actions(state, schema.user).update(
+         userRecord.id,
+         createUpdateData(state.now())
+      )
       const updatedDatabase = await exportDatabase(state, 'user:*')
       logger.info('update', { updatedDatabase })
       assertDatabase(updatedDatabase, expectedDatabase)
