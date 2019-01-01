@@ -16,7 +16,7 @@ const createSampleUserRecord = state => ({
    org: 'test-org',
    group: 'software-development',
    email: 'evan@test-org.com',
-   created: new Date(state.timestamp),
+   updated: new Date(state.timestamp),
    verified: false
 })
 
@@ -28,10 +28,10 @@ const createExpectedDatabase = state => ({
       org: 'test-org',
       group: 'software-development',
       email: 'evan@test-org.com',
-      created: new Date(state.timestamp).toISOString(),
+      updated: new Date(state.timestamp).toISOString(),
       verified: 'false' // TODO: Parse to boolean
    },
-   'user::created:z': ['1234', String(state.timestamp)],
+   'user::updated:z': ['1234', String(state.timestamp)],
    'user::email:h': {
       'evan@test-org.com': '1234'
    },
@@ -50,7 +50,7 @@ require('../lib/app')({
    state: {},
    async start(state) {
       const { redis, logger } = state
-      initDatabaseSchema(schema)
+      initDatabaseSchema(state, schema)
       redis.flushdbAsync()
       const userRecord = createSampleUserRecord(state)
       const expectedDatabase = createExpectedDatabase(state)

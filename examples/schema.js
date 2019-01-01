@@ -1,11 +1,15 @@
+const { PropTypes } = require('prop-types')
+
 module.exports = {
    user: {
       validate: user => true,
       properties: {
          email: {
+            type: PropTypes.string.isRequired,
             validate: user => typeof user.email === 'string'
          },
-         created: {
+         updated: {
+            type: PropTypes.instanceOf(Date).isRequired,
             stringify: date => date.toISOString(),
             parse: string => new Date(string)
          }
@@ -23,9 +27,9 @@ module.exports = {
          }
       },
       scoreIndexes: {
-         created: {
-            fields: ['created'],
-            indexer: user => user.created.getTime()
+         updated: {
+            fields: ['updated'],
+            indexer: user => user.updated.getTime()
          }
       }
    }

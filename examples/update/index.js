@@ -17,13 +17,14 @@ const createSampleUserRecord = timestamp => ({
    org: 'test-org',
    group: 'software-development',
    email: 'evan@test-org.com',
-   created: new Date(timestamp),
+   updated: new Date(timestamp),
    verified: false
 })
 
 const createUpdateData = timestamp => ({
    email: 'evan@test.org',
-   org: 'testy-org'
+   org: 'testy-org',
+   updated: new Date(timestamp)
 })
 
 const createExpectedDatabase = timestamp => ({
@@ -34,10 +35,10 @@ const createExpectedDatabase = timestamp => ({
       org: 'testy-org',
       group: 'software-development',
       email: 'evan@test.org',
-      created: new Date(timestamp).toISOString(),
+      updated: new Date(timestamp).toISOString(),
       verified: 'false'
    },
-   'user::created:z': ['1234', String(timestamp)],
+   'user::updated:z': ['1234', String(timestamp)],
    'user::email:h': {
       'evan@test.org': '1234'
    },
@@ -60,15 +61,15 @@ starter({
    },
    async start(state) {
       const { redis, logger } = state
-      initDatabaseSchema(schema)
+      initDatabaseSchema(state, schema)
       const userRecord = createSampleUserRecord(state.now())
-      const expectedDatabase = createExpectedDatabase(state.timestamp)
       await actions(state, schema.user).create(userRecord)
       const createdDatabase = await exportDatabase(state, 'user:*')
       logger.info('create', { createdDatabase })
+      const expectedDatabase = createExpectedDatabase(state.now())
       await actions(state, schema.user).update(
          userRecord.id,
-         createUpdateData(state.now())
+         createUpdateData(state.timestamp)
       )
       const updatedDatabase = await exportDatabase(state, 'user:*')
       logger.info('update', { updatedDatabase })

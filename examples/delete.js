@@ -24,7 +24,7 @@ const data = {
    org: 'test-org',
    group: 'software-development',
    email: 'evan@test-org.com',
-   created: new Date(state.timestamp),
+   updated: new Date(state.timestamp),
    verified: false
 }
 
@@ -36,10 +36,10 @@ const expectedDatabase = {
       org: 'test-org',
       group: 'software-development',
       email: 'evan@test-org.com',
-      created: new Date(state.timestamp).toISOString(),
+      updated: new Date(state.timestamp).toISOString(),
       verified: 'false'
    },
-   'user::created:z': ['1234', String(state.timestamp)],
+   'user::updated:z': ['1234', String(state.timestamp)],
    'user::email:h': {
       'evan@test-org.com': '1234'
    },
@@ -70,7 +70,7 @@ const configureClient = async ({ redis, config }) => {
 }
 
 const start = async () => {
-   initDatabaseSchema(schema)
+   initDatabaseSchema(state, schema)
    state.config = getConfigEnv(process.env)
    state.redis = redis.createClient(state.config.redis)
    state.redis.flushdb()

@@ -7,7 +7,7 @@ module.exports = {
          org: 'test-org',
          group: 'software-dev',
          email: 'evan@test-org.com',
-         created: '2018-10-11T10:11:12.333Z',
+         updated: '2018-10-11T10:11:12.333Z',
          verified: 'false'
       },
       {
@@ -17,7 +17,7 @@ module.exports = {
          org: 'test-org',
          group: 'management',
          email: 'bryan@test-org.com',
-         created: '2018-10-11T10:11:12.333Z',
+         updated: '2018-10-11T10:11:12.333Z',
          verified: 'false'
       }
    ],
