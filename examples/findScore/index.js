@@ -38,13 +38,15 @@ starter({
    async start(state) {
       const { redis, logger } = state
       initDatabaseSchema(state, schema)
-      const userRecord = createSampleUserRecord(state.now())
+      const timestamp = state.now()
+      const userRecord = createSampleUserRecord(timestamp)
       await actions(state, schema.user).create(userRecord)
       const createdDatabase = await exportDatabase(state, 'user:*')
       logger.info('create', { createdDatabase })
       const userStore = actions(state, schema.user)
-      const result = await userStore.findOne({
-         email: 'evan@test-org.com'
+      const [result] = await userStore.findScore({
+         index: 'updated',
+         range: [timestamp, timestamp]
       })
       assert.deepStrictEqual(result, userRecord)
       logger.info('result', { result })
