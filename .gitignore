@@ -5,3 +5,5 @@
 /.eslintcache
 /.idea
 /.vscode
+/.cache
+/dist
