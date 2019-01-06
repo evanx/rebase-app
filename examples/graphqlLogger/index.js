@@ -7,7 +7,7 @@ require('../../lib/app')({
    config: {
       testing: true,
       systemKey: 'rebase:test',
-      serviceKey: 'examples:graphql-redis-server',
+      serviceKey: 'examples:graphql-logger',
       redis: {
          db: 13
       },

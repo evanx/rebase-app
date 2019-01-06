@@ -26,6 +26,7 @@
       "express": "^4.16.4",
       "fastify": "^1.13.2",
       "fastify-gql": "^0.6.0",
+      "graphql-iso-date": "^3.6.1",
       "graphql-redis-subscriptions": "^2.0.0",
       "graphql-subscriptions": "^1.0.0",
       "graphql-tools": "^4.0.3",
