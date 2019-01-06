@@ -7,7 +7,9 @@
       "test": "jest",
       "demo": "bash bin/demo.sh",
       "example:create": "node examples/create",
-      "example:delete": "node examples/delete"
+      "example:delete": "node examples/delete",
+      "start": "cross-env NODE_ENV=development parcel examples/parcelReact/index.html ",
+      "build": "cross-env NODE_ENV=production parcel build examples/parcelReact/index.html --no-minify --public-url /"
    },
    "repository": {
       "type": "git",
@@ -15,6 +17,20 @@
    },
    "author": "evan.summers@bounce.com",
    "license": "ISC",
+   "postcss": {
+      "modules": false,
+      "plugins": {
+         "autoprefixer": {
+            "browsers": [
+               ">1%",
+               "last 4 versions",
+               "Firefox ESR",
+               "not ie < 9"
+            ],
+            "flexbox": "no-2009"
+         }
+      }
+   },
    "dependencies": {
       "@feathersjs/errors": "^3.3.4",
       "apollo-server": "^2.3.1",
@@ -38,12 +54,18 @@
       "pino-pretty": "^2.4.0",
       "prop-types": "^15.6.2",
       "redis": "^2.8.0",
-      "subscriptions-transport-ws": "^0.9.15"
+      "subscriptions-transport-ws": "^0.9.15",
+      "autoprefixer": "^7.2.1",
+      "babel-preset-react-app": "^3.1.0",
+      "react": "^16.2.0",
+      "react-dom": "^16.2.0"
    },
    "devDependencies": {
       "chai": "^4.2.0",
       "jest": "^23.6.0",
       "mocha": "^5.2.0",
-      "nodemon": "^1.18.9"
+      "nodemon": "^1.18.9",
+      "parcel-bundler": "latest",
+      "cross-env": "^5.1.1"
    }
 }
