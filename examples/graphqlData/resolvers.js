@@ -1,5 +1,5 @@
 const { GraphQLDate } = require('graphql-iso-date')
-
+const tableActions = require('../../lib/tableActions')
 const { pubsub, topics } = require('./subscriptions')
 
 const keys = {
@@ -9,12 +9,24 @@ const keys = {
 module.exports = {
    Date: GraphQLDate,
    Query: {
-      getUserById: (parent, { id }, { redis, logger }) => {
+      getUserById: async (parent, { id }, { redis, logger }) => {
          const key = keys.record('user', id)
          try {
-            return redis.hgetallAsync(key)
+            return await redis.hgetallAsync(key)
          } catch (error) {
             logger.error('getUserById', { key }, error)
+            return null
+         }
+      },
+      getUserByEmail: async (parent, { email }, state) => {
+         try {
+            const userActions = tableActions(state, state.schema.user)
+            const result = await userActions.findUnique({
+               email
+            })
+            return result
+         } catch (error) {
+            state.logger.error('getUserById', { email }, error)
             return null
          }
       }

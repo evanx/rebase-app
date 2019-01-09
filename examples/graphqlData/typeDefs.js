@@ -4,6 +4,7 @@ module.exports = gql`
    scalar Date
    type Query {
       getUserById(id: String!): User
+      getUserByEmail(email: String!): User
    }
    type User {
       id: Int!

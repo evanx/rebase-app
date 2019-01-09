@@ -1,3 +1,5 @@
+const schema = require('../schema')
+const initDatabaseSchema = require('../../lib/initDatabaseSchema')
 const graphqlServer = require('../../lib/graphqlServer')
 const resolvers = require('./resolvers')
 const typeDefs = require('./typeDefs')
@@ -23,6 +25,7 @@ require('../../lib/app')({
    },
    async start(state) {
       const { config, redis, logger } = state
+      initDatabaseSchema(state, schema)
       const { end } = await graphqlServer({
          config,
          typeDefs,
@@ -36,7 +39,8 @@ require('../../lib/app')({
          context: async () => {
             return {
                redis,
-               logger
+               logger,
+               schema
             }
          }
       })

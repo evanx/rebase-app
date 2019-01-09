@@ -43,7 +43,7 @@ starter({
       const createdDatabase = await exportDatabase(state, 'user:*')
       logger.info('create', { createdDatabase })
       const userStore = actions(state, schema.user)
-      const result = await userStore.findOne({
+      const result = await userStore.findUnique({
          email: 'evan@test-org.com'
       })
       assert.deepStrictEqual(result, userRecord)
