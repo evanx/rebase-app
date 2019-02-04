@@ -41,14 +41,14 @@ starter({
       const userRecord = createSampleUserRecord(state.now())
       await actions(state, schema.user).create(userRecord)
       const createdDatabase = await exportDatabase(state, 'user:*')
-      logger.info('create', { createdDatabase })
+      logger.info({ createdDatabase })
       const userStore = actions(state, schema.user)
       const result = await userStore.findGroup({
          org: 'test-org',
          group: 'software-development'
       })
       assert.deepStrictEqual(result, [userRecord])
-      logger.info('result', { result })
+      logger.info({ result })
       return state.end()
    }
 })

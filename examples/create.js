@@ -56,7 +56,7 @@ require('../lib/app')({
       const expectedDatabase = createExpectedDatabase(state)
       await actions(state, schema.user).create(userRecord)
       const resultDatabase = await exportDatabase(state, 'user:*')
-      logger.info('create', { resultDatabase })
+      logger.info({ resultDatabase })
       assertDatabase(resultDatabase, expectedDatabase)
       return state.end()
    }

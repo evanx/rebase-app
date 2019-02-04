@@ -9,42 +9,58 @@ require('../../lib/app')({
       systemKey: 'rebase:test',
       serviceKey: 'examples:graphql-logger',
       redis: {
-         db: 13
+         db: 13,
       },
       httpServer: {
-         port: 8888
-      }
+         port: 8888,
+      },
+      // jwtSecret: 'secret',
    },
    state: {
       subscriptions: {
          topics,
-         pubsub
-      }
+         pubsub,
+      },
    },
    async start(state) {
       const { config, redis, logger } = state
-      const { end } = await graphqlServer({
+      logger.warn({}, 'start')
+      const { endServer } = await graphqlServer({
          config,
          typeDefs,
          resolvers,
          subscriptions: {
             onConnect: (connectionParams, webSocket) => {
-               logger.debug('onConnect')
+               logger.info({}, 'onConnect')
                return {
-                  testWebsocketContext: 'ok'
+                  testWebsocketContext: 'ok',
                }
-            }
+            },
          },
          context: async () => {
             return {
                redis,
-               logger
+               logger,
             }
-         }
+         },
       })
-
-      setInterval(() => {
-         logger.debug('publish', { topic: topics.LOGGER_CHANGED })
+      const intervalId = setInterval(() => {
+         logger.debug({ now: Date.now() }, 'publish')
       }, 2000)
-   }
+      const timeoutId = setTimeout(() => {
+         if (!state.intervalCleared) {
+            state.intervalCleared = true
+            clearInterval(intervalId)
+         }
+      }, 999000)
+      const end = async () => {
+         if (!state.ended) {
+            state.ended = true
+            if (!state.intervalCleared) {
+               clearInterval(intervalId)
+            }
+            clearTimeout(timeoutId)
+         }
+      }
+   },
 })

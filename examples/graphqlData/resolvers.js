@@ -13,8 +13,8 @@ module.exports = {
          const key = keys.record('user', id)
          try {
             return await redis.hgetallAsync(key)
-         } catch (error) {
-            logger.error('getUserById', { key }, error)
+         } catch (err) {
+            logger.error({ key, err }, 'getUserById')
             return null
          }
       },
@@ -25,8 +25,8 @@ module.exports = {
                email
             })
             return result
-         } catch (error) {
-            state.logger.error('getUserById', { email }, error)
+         } catch (err) {
+            state.logger.error({ email, err }, 'getUserById')
             return null
          }
       }
@@ -37,8 +37,8 @@ module.exports = {
          try {
             await redis.hsetAsync(key, 'email', email)
             return true
-         } catch (error) {
-            logger.error('setUserEmail', { key, value }, error)
+         } catch (err) {
+            logger.error({ key, value, err }, 'setUserEmail')
             return false
          }
       }

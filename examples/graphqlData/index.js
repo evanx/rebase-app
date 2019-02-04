@@ -11,38 +11,38 @@ require('../../lib/app')({
       systemKey: 'rebase:test',
       serviceKey: 'examples:graphql-data',
       redis: {
-         db: 13
+         db: 13,
       },
       httpServer: {
-         port: 8888
-      }
+         port: 8888,
+      },
    },
    state: {
       subscriptions: {
          topics,
-         pubsub
-      }
+         pubsub,
+      },
    },
    async start(state) {
       const { config, redis, logger } = state
       initDatabaseSchema(state, schema)
-      const { end } = await graphqlServer({
+      const { endServer } = await graphqlServer({
          config,
          typeDefs,
          resolvers,
          subscriptions: {
             onConnect: (connectionParams, webSocket) => {
-               logger.debug('onConnect')
+               logger.debug({}, 'onConnect')
                return {}
-            }
+            },
          },
          context: async () => {
             return {
                redis,
                logger,
-               schema
+               schema,
             }
-         }
+         },
       })
-   }
+   },
 })

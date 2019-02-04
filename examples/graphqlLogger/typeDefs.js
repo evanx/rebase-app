@@ -12,6 +12,8 @@ module.exports = gql`
       ): [Logger]
    }
    type Mutation {
+      register(email: String!, password: String!, name: String!): String!
+      login(email: String!, password: String!): String!
       set(key: String!, value: String!): Boolean!
    }
    type Subscription {
@@ -20,9 +22,7 @@ module.exports = gql`
    type Logger {
       name: String!
       timestamp: String!
-      id: String!
       level: String!
-      data: String!
-      error: String
+      vars: String!
    }
 `

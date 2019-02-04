@@ -65,14 +65,14 @@ starter({
       const userRecord = createSampleUserRecord(state.now())
       await actions(state, schema.user).create(userRecord)
       const createdDatabase = await exportDatabase(state, 'user:*')
-      logger.info('create', { createdDatabase })
+      logger.info({ createdDatabase })
       const expectedDatabase = createExpectedDatabase(state.now())
       await actions(state, schema.user).update(
          userRecord.id,
          createUpdateData(state.timestamp)
       )
       const updatedDatabase = await exportDatabase(state, 'user:*')
-      logger.info('update', { updatedDatabase })
+      logger.info({ updatedDatabase })
       assertDatabase(updatedDatabase, expectedDatabase)
       const loggerRes = lodash.flattenDeep(
          await redis.xreadAsync('streams', 'logger:examples:update:1:x', '0-0')

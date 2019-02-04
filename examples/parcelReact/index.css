@@ -1,3 +1,7 @@
+html {
+   scroll-behavior: smooth;
+}
+
 body {
    margin: 0;
    padding: 0;
@@ -5,12 +9,8 @@ body {
       'Helvetica Neue', Arial, sans-serif;
 }
 
-.App {
-   display: flex;
-   flex-direction: column;
-   align-items: center;
-   text-align: center;
-   margin: 2rem auto;
+#App {
+   margin: 1rem;
 }
 
 img {
@@ -19,6 +19,59 @@ img {
    width: 100px;
 }
 
-.App:hover > img {
+#App:hover > img {
    transform: rotate(1080deg);
+}
+
+#App .loading {
+   color: #eee;
+}
+
+.recordTable {
+   border-spacing: 0.5rem 0;
+   background-color: #fff;
+   font-family: monospace;
+}
+
+.recordTable tr {
+   color: #ccc;
+}
+
+.recordTable th {
+   text-align: left;
+   color: #ddd;
+   border-bottom: solid 1px #eee;
+}
+
+.recordTable td {
+   padding-left: 0px;
+}
+
+.recordTable .name {
+   font-weight: bold;
+   color: #aaa;
+}
+
+.recordTable .timestamp-seconds {
+   font-weight: normal;
+}
+
+.recordTable .timestamp-milliseconds {
+   color: #888888;
+}
+
+.recordTable .level.debug {
+   color: #ccc;
+}
+
+.recordTable .level.info {
+   color: lightblue;
+}
+
+.recordTable .level.warn {
+   color: orange;
+}
+
+.recordTable .level.error {
+   color: red;
 }

@@ -42,14 +42,14 @@ starter({
       const userRecord = createSampleUserRecord(timestamp)
       await actions(state, schema.user).create(userRecord)
       const createdDatabase = await exportDatabase(state, 'user:*')
-      logger.info('create', { createdDatabase })
+      logger.info({ createdDatabase })
       const userStore = actions(state, schema.user)
       const [result] = await userStore.findScore({
          index: 'updated',
          range: [timestamp, timestamp]
       })
       assert.deepStrictEqual(result, userRecord)
-      logger.info('result', { result })
+      logger.info({ result })
       return state.end()
    }
 })
