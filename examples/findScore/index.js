@@ -1,6 +1,4 @@
 const assert = require('assert')
-const rtx = require('multi-exec-async')
-const lodash = require('lodash')
 
 const starter = require('../../lib/app')
 const actions = require('../../lib/tableActions')
@@ -18,7 +16,7 @@ const createSampleUserRecord = timestamp => ({
    group: 'software-development',
    email: 'evan@test-org.com',
    updated: new Date(timestamp),
-   verified: false
+   verified: false,
 })
 
 starter({
@@ -27,13 +25,13 @@ starter({
       systemKey: 'rebase:test',
       serviceKey: 'examples:update',
       redis: {
-         db: 13
-      }
+         db: 13,
+      },
    },
    state: {
       configureRedis({ redis }) {
          redis.flushdbAsync()
-      }
+      },
    },
    async start(state) {
       const { redis, logger } = state
@@ -46,10 +44,10 @@ starter({
       const userStore = actions(state, schema.user)
       const [result] = await userStore.findScore({
          index: 'updated',
-         range: [timestamp, timestamp]
+         range: [timestamp, timestamp],
       })
       assert.deepStrictEqual(result, userRecord)
       logger.info({ result })
       return state.end()
-   }
+   },
 })

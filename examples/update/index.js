@@ -1,5 +1,4 @@
 const assert = require('assert')
-const rtx = require('multi-exec-async')
 const lodash = require('lodash')
 
 const starter = require('../../lib/app')
@@ -18,13 +17,13 @@ const createSampleUserRecord = timestamp => ({
    group: 'software-development',
    email: 'evan@test-org.com',
    updated: new Date(timestamp),
-   verified: false
+   verified: false,
 })
 
 const createUpdateData = timestamp => ({
    email: 'evan@test.org',
    org: 'testy-org',
-   updated: new Date(timestamp)
+   updated: new Date(timestamp),
 })
 
 const createExpectedDatabase = timestamp => ({
@@ -36,13 +35,13 @@ const createExpectedDatabase = timestamp => ({
       group: 'software-development',
       email: 'evan@test.org',
       updated: new Date(timestamp).toISOString(),
-      verified: 'false'
+      verified: 'false',
    },
    'user::updated:z': ['1234', String(timestamp)],
    'user::email:h': {
-      'evan@test.org': '1234'
+      'evan@test.org': '1234',
    },
-   'user:group::testy-org:software-development:s': ['1234']
+   'user:group::testy-org:software-development:s': ['1234'],
 })
 
 starter({
@@ -51,13 +50,13 @@ starter({
       systemKey: 'rebase:test',
       serviceKey: 'examples:update',
       redis: {
-         db: 13
-      }
+         db: 13,
+      },
    },
    state: {
       configureRedis({ redis }) {
          redis.flushdbAsync()
-      }
+      },
    },
    async start(state) {
       const { redis, logger } = state
@@ -69,13 +68,13 @@ starter({
       const expectedDatabase = createExpectedDatabase(state.now())
       await actions(state, schema.user).update(
          userRecord.id,
-         createUpdateData(state.timestamp)
+         createUpdateData(state.timestamp),
       )
       const updatedDatabase = await exportDatabase(state, 'user:*')
       logger.info({ updatedDatabase })
       assertDatabase(updatedDatabase, expectedDatabase)
       const loggerRes = lodash.flattenDeep(
-         await redis.xreadAsync('streams', 'logger:examples:update:1:x', '0-0')
+         await redis.xreadAsync('streams', 'logger:examples:update:1:x', '0-0'),
       )
       const expectedLoggerStrings = [
          'logger:examples:update:1:x',
@@ -84,13 +83,13 @@ starter({
          'examples:update:1',
          'level',
          'info',
-         'data'
+         'vars',
       ]
       assert.deepStrictEqual(
          loggerRes.slice(0, expectedLoggerStrings.length),
          expectedLoggerStrings,
-         'logger'
+         'logger',
       )
       return state.end()
-   }
+   },
 })

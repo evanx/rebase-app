@@ -1,8 +1,8 @@
 const assert = require('assert')
 const lodash = require('lodash')
-const rtx = require('multi-exec-async')
+const { execMulti, quitRedis } = require('@evanx/redis-async')
 const redis = require('../lib/redis')
-const logger = require('../lib/logger')
+const tracing = require('../lib/tracing')
 const actions = require('../lib/tableActions')
 const initDatabaseSchema = require('../lib/initDatabaseSchema')
 const schema = require('./schema')
@@ -47,7 +47,7 @@ const expectedDatabase = {
 }
 
 const end = async () => {
-   state.redis.quit()
+   await quitRedis(state.redis)
 }
 
 const getConfigEnv = env => {
@@ -61,10 +61,10 @@ const getConfigEnv = env => {
 }
 
 const configureClient = async ({ redis, config }) => {
-   const [instanceId, configRes] = await rtx(redis, multi => {
-      multi.incr(`${config.clientKey}:i`)
-      multi.hgetallAsync(`config:${config.clientKey}`)
-   })
+   const [instanceId, configRes] = await execMulti(redis, [
+      ['incr', `${config.clientKey}:i`],
+      ['hgetall', `config:${config.clientKey}`],
+   ])
    Object.assign(config, configRes)
    config.serviceId = `${config.clientKey}:${instanceId}`
 }
@@ -74,11 +74,12 @@ const start = async () => {
    state.redis = redis.createClient(state.config.redis)
    state.redis.flushdb()
    await configureClient(state)
-   const logger = logger(state)({ name: 'delete' })
+   const logger = tracing(state)({ name: 'delete' })
    logger.debug({
       status: 'starting',
       serviceId: state.config.serviceId,
    })
+   state.logger = logger
    initDatabaseSchema({ logger }, schema)
    const initialDatabase = await exportDatabase(state, 'user:*')
    const indexData = lodash.pick(data, schema.indexFields)
@@ -87,14 +88,10 @@ const start = async () => {
    logger.info({ resultDatabase })
    assertDatabase(resultDatabase, expectedDatabase)
    await actions(state, schema.user).delete(indexData)
-   await rtx(state.redis, multi => {
-      multi.del('l:examples:delete:1:x')
-   })
+   await execMulti(state.redis, [['del', 'l:examples:delete:1:x']])
    const finalDatabase = await exportDatabase(state, 'user:*')
    assert.deepStrictEqual(initialDatabase, finalDatabase, 'final database')
-   await rtx(state.redis, multi => {
-      multi.del('examples:delete:i')
-   })
+   await execMulti(state.redis, [['del', 'examples:delete:i']])
 }
 
 start()

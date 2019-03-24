@@ -650,6 +650,11 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
+"@evanx/redis-async@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@evanx/redis-async/-/redis-async-0.0.3.tgz#6d295abb4f762f37977b42d81e4b78bb46fa760a"
+  integrity sha512-YpzITLNT00LpIyWY2NZ8D+J8aftXKAC4DOhq/m4C8Yju/evD3k55kCYlKBeJFIW4vCz8pfCJ/0pAGfp+dhTiOA==
+
 "@feathersjs/errors@^3.3.4":
   version "3.3.6"
   resolved "https://registry.yarnpkg.com/@feathersjs/errors/-/errors-3.3.6.tgz#c34cfcd0a8fc1519afb36030efb3f835a8088015"
@@ -8042,10 +8047,10 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.2.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-apollo-hooks@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/react-apollo-hooks/-/react-apollo-hooks-0.3.1.tgz#6049d5883b809d28ba24277e584a099d49697c7b"
-  integrity sha512-HF519dUBOmpS1DTtbPnd6EO/2nHUV7OtJYyoHlX3wdKWwV06CnwJp88Kmp1aUD0Gkg623znQjGsXwHAb8AtYTA==
+react-apollo-hooks@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/react-apollo-hooks/-/react-apollo-hooks-0.4.0.tgz#8b7992cf78f19390c530bc8f6a201cb4763c35b4"
+  integrity sha512-dQ7mWptHSQ7rk4YfcAuDN+ct/kP3Qg91r3vR+EX4YHHnIH8eDRAD097K0xE6bOIbeTtcGzBjBU5csRVrTHnnJw==
   dependencies:
     lodash "^4.17.11"
 

@@ -1,5 +1,4 @@
 const assert = require('assert')
-const rtx = require('multi-exec-async')
 const lodash = require('lodash')
 
 const actions = require('../lib/tableActions')
@@ -17,7 +16,7 @@ const createSampleUserRecord = state => ({
    group: 'software-development',
    email: 'evan@test-org.com',
    updated: new Date(state.timestamp),
-   verified: false
+   verified: false,
 })
 
 const createExpectedDatabase = state => ({
@@ -29,13 +28,13 @@ const createExpectedDatabase = state => ({
       group: 'software-development',
       email: 'evan@test-org.com',
       updated: new Date(state.timestamp).toISOString(),
-      verified: 'false' // TODO: Parse to boolean
+      verified: 'false', // TODO: Parse to boolean
    },
    'user::updated:z': ['1234', String(state.timestamp)],
    'user::email:h': {
-      'evan@test-org.com': '1234'
+      'evan@test-org.com': '1234',
    },
-   'user:group::test-org:software-development:s': ['1234']
+   'user:group::test-org:software-development:s': ['1234'],
 })
 
 require('../lib/app')({
@@ -44,8 +43,8 @@ require('../lib/app')({
       systemKey: 'rebase:test',
       serviceKey: 'examples:create',
       redis: {
-         db: 13
-      }
+         db: 13,
+      },
    },
    state: {},
    async start(state) {
@@ -59,5 +58,5 @@ require('../lib/app')({
       logger.info({ resultDatabase })
       assertDatabase(resultDatabase, expectedDatabase)
       return state.end()
-   }
+   },
 })

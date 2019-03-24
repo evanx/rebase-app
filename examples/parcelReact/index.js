@@ -6,6 +6,7 @@ const { Suspense, Fragment, useState } = React
 import { ApolloProvider, Subscription } from 'react-apollo'
 import {
    useQuery,
+   useSubscription,
    ApolloProvider as ApolloHooksProvider,
 } from 'react-apollo-hooks'
 import ApolloClient from 'apollo-client'
@@ -177,7 +178,8 @@ function LiveRecords({ initialRecords }) {
 }
 
 function ApolloApp() {
-   const { data, error } = useQuery(QUERY, { variables: {} })
+   const { data, error } = useQuery(QUERY, { suspend: true, variables: {} })
+   console.log({ useSubscription, data })
    if (error) {
       return <span className="queryStatus">Error</span>
    } else {
