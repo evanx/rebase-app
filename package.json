@@ -75,9 +75,8 @@
       "babel-preset-react-app": "^3.1.0",
       "chai": "^4.2.0",
       "cross-env": "^5.1.1",
-      "jest": "^23.6.0",
       "mocha": "^5.2.0",
       "nodemon": "^1.18.9",
-      "parcel-bundler": "latest"
+      "parcel-bundler": "^1.12.4"
    }
 }
