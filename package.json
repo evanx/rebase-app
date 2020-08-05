@@ -48,7 +48,7 @@
       "colors": "^1.3.3",
       "express": "^4.16.4",
       "express-jwt": "^6.0.0",
-      "fastify": "^1.13.2",
+      "fastify": "^2.15.1",
       "fastify-gql": "^0.6.0",
       "graphql": "^14.0.2",
       "graphql-iso-date": "^3.6.1",
